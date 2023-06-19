@@ -7,7 +7,7 @@ const { argv } = require('process');
 
 async function run() {
   const browser = await puppeteer.launch({
-    headless: false
+    headless: true
   });
 
   const page = await browser.newPage();
@@ -20,7 +20,6 @@ async function run() {
   const PASSWORD_SELECTOR = '#pass';
   const BUTTON_SELECTOR = '#content > div > div._8esj._95k9._8esf._8opv._8f3m._8ilg._8icx._8op_._95ka > div._8esk > div._8esn > div._8iep._8icy._9ahz._9ah- > div._6luv._52jv > form > div._6ltg > button';
 
-  // const BUTTON_SELECTOR = "#u_0_5_Oc";
 
   async function scroll(numbers) {
     for (let i = 0; i < numbers; i++) {
@@ -53,8 +52,6 @@ async function run() {
   });
 
 
-  console.log("Ami asi");
-
   RANDOM_CLICK = 'div.x9f619.x193iq5w.x1miatn0.xqmdsaz.x1gan7if.x1xfsgkm'
   await page.click(RANDOM_CLICK);
 
@@ -67,8 +64,6 @@ async function run() {
   async function generateURLs(){
     let newUrls = await page.evaluate(() => {
     let results = [];
-
-
 
     let items = document.querySelectorAll('div.x78zum5.xdt5ytf.xz62fqu.x16ldp7u > div.xu06os2.x1ok221b > span > div > a.x1i10hfl.xjbqb8w.x6umtig.x1b1mbwd.xaqea5y.xav7gou.x9f619.x1ypdohk.xt0psk2.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.xt0b8zv.xzsf02u.x1s688f');
 
@@ -104,7 +99,7 @@ async function saveToCSV(urls, path){
 
   csvWriter
     .writeRecords(urls)
-    .then(() => console.log('CSV file "usernames.csv" has been created successfully.'))
+    .then(() => console.log(`CSV file ${path} has been created successfully.`))
     .catch((err) => console.error('Error writing CSV file:', err));
 }
 
@@ -116,15 +111,14 @@ async function saveToCSV(urls, path){
   for (const obj of urls) {
     const url = obj.url;
     if (regex.test(url)) {
-      console.log(url);
+      console.log(`Scrapping the infos from this profile ${url}`);
       await page.goto(url);
       await page.waitForTimeout(2 * 1000);
       break;
     }
   }
 
-
-  console.log("Amrao asi");
+  // console.log("checkpoint 2")
   RANDOM_CLICK2 = ('div.x6s0dn4.x78zum5.xvrxa7q.x9w375v.xxfedj9.x1roke11.x1es02x0');
 
   await page.click(RANDOM_CLICK2);
@@ -168,17 +162,12 @@ await clickSeeMore();
 
 
   async function fetchPublicPost(){
-  // const classSelector = '.x193iq5w.xeuugli.x13faqbe.x1vvkbs.x10flsy6.x1lliihq.x1s928wv.xhkezso.x1gmr53x.x1cpjm7i.x1fgarty.x1943h6x.x4zkp8e.x41vudc.x6prxxf.xvq8zen.xo1l8bm.xzsf02u.x1yc453h';
-
 
   const classSelector = ".x1cy8zhl.x78zum5.x1q0g3np.xod5an3.x1pi30zi.x1swvt13.xz9dl7a";
 
 
   
   const elems = await page.$$(classSelector);
-
-  // function processPost(post) {}
-  // console.log(elems);
 
 
   function pretifyJSON(inputString){
@@ -203,7 +192,6 @@ await clickSeeMore();
 
   function makeJSONObject(str){
   
-  
   // Regular expression pattern
   const regex = /(\d{1,2}\s\w+\s(?:at\s\d{2}:\d{2})?)/;
 
@@ -212,47 +200,31 @@ await clickSeeMore();
 
   // Extracted date
   const date = match ? match[0] : null;
+  const formattedDate = date ? date.replace(/\n$/, '').trim() : null;
 
-
-  // Regular expression pattern
-// const regex2 = /^(.*?)\b(\d{1,2}\s\w+\s(?:at\s\d{2}:\d{2})?)/;
 
 // Regular expression pattern
 const regex3 = /^(.*?)\s*(?:\d{1,2}\s\w+\s(?:at\s\d{2}:\d{2})?|$)/;
 
-// Extract the text before the date from the string
+// Extract the date from the string
 const match2 = str.match(regex3);
-const name = match2 ? match2[1].trim() : null;
+const name = match2 ? match2[1].trim().replace(/\u00A0 ·$/, '') : null;
+
+// Extract content from the string
+const contentRegex = /^[\s·]+/;
+const content = str.split(date)[1].replace(contentRegex, '').replace("Shared with Public", "Shared with Public ").trim();
 
 
   const result = {
-  name: name,
-  date: date,
-  content: ''
+  'name': name,
+  'postDate|timeSincePosted': formattedDate,
+  'content': content
   };
 
-  // console.log(result);
   return result;
-
-  // let regex = /\d{1,2}\s\w{3}|\d{1,2}\s\w{3}\sat\s\d{2}:\d{2}/;
-  // let date = str.match(regex)[0];
-
-  // let name = str.split(date)[0].trim();
-
-  // let content = str.split(date)[1].trim();
-
-  // const obj = {
-  //     name: name,
-  //     date: date,
-  //     content: content
-  // };
-
-  // return obj;
-
 
   }
 
-  // pretifyJSON(reactionRemoveString);
   return makeJSONObject(reactionRemoveString);
 
 }
@@ -264,11 +236,8 @@ const name = match2 ? match2[1].trim() : null;
     const elem = elems[i];
     const textContent = await elem.evaluate(el => {
      return el.parentNode.parentNode.innerText;
-      // return el.innerText
-    });
 
-    // console.log(textContent);
-    // console.log('Pretty Content', pretifyJSON(textContent));
+    });
 
     pretifyJSON(textContent);
     
@@ -280,8 +249,6 @@ const name = match2 ? match2[1].trim() : null;
   }
 
   const posts = await fetchPublicPost();
-
-  // console.log(posts);
 
 
   function saveAsJSON(object, filename){
@@ -296,7 +263,7 @@ const name = match2 ? match2[1].trim() : null;
 
   console.log('Data saved to JSON file:', filePath);
 
-  // browser.close();
+  browser.close();
 
 }
 
@@ -307,4 +274,4 @@ const name = match2 ? match2[1].trim() : null;
 }
 
 
-run(5).then(console.log).catch(console.error);
+run()
