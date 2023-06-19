@@ -201,39 +201,58 @@ await clickSeeMore();
 
   let reactionRemoveString = trimDateAndReaction(inputString);
 
-  function makeJSONObject(inputString){
-  // const dateRegex = /(\d{1,2}\s\w+|\d{1,2}\s\w+\sat\s\d{2}:\d{2})/;
-  // const name = inputString.split(dateRegex)[0].trim();
-  // const date = inputString.match(dateRegex)?.[0] || '';
-  // const content = inputString.replace(name, '').replace(date, '').trim();
+  function makeJSONObject(str){
+  
+  
+  // Regular expression pattern
+  const regex = /(\d{1,2}\s\w+\s(?:at\s\d{2}:\d{2})?)/;
 
-  // const result = {
-  // name: name,
-  // date: date,
-  // content: content
+  // Extract the date from the text using match()
+  const match = str.match(regex);
+
+  // Extracted date
+  const date = match ? match[0] : null;
+
+
+  // Regular expression pattern
+// const regex2 = /^(.*?)\b(\d{1,2}\s\w+\s(?:at\s\d{2}:\d{2})?)/;
+
+// Regular expression pattern
+const regex3 = /^(.*?)\s*(?:\d{1,2}\s\w+\s(?:at\s\d{2}:\d{2})?|$)/;
+
+// Extract the text before the date from the string
+const match2 = str.match(regex3);
+const name = match2 ? match2[1].trim() : null;
+
+
+  const result = {
+  name: name,
+  date: date,
+  content: ''
+  };
+
+  // console.log(result);
+  return result;
+
+  // let regex = /\d{1,2}\s\w{3}|\d{1,2}\s\w{3}\sat\s\d{2}:\d{2}/;
+  // let date = str.match(regex)[0];
+
+  // let name = str.split(date)[0].trim();
+
+  // let content = str.split(date)[1].trim();
+
+  // const obj = {
+  //     name: name,
+  //     date: date,
+  //     content: content
   // };
 
-  // console.log(result);
-
-  const dateRegex = /(\d{1,2}\s\w+(?:\sat\s\d{2}:\d{2})?)/;
-  const name = inputString.split(dateRegex)[0].trim();
-  const date = inputString.match(dateRegex)?.[0] || '';
-  
-  const content = inputString.replace(name, '').replace(date, '').trim();
-  
-  const result = {
-    name: name,
-    date: date,
-    content: content
-  };
-  
-  // console.log(result);
-
-  return result;
+  // return obj;
 
 
   }
 
+  // pretifyJSON(reactionRemoveString);
   return makeJSONObject(reactionRemoveString);
 
 }
