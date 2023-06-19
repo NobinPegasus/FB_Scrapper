@@ -168,15 +168,92 @@ await clickSeeMore();
 
 
   async function fetchPublicPost(){
-  const classSelector = '.x193iq5w.xeuugli.x13faqbe.x1vvkbs.x10flsy6.x1lliihq.x1s928wv.xhkezso.x1gmr53x.x1cpjm7i.x1fgarty.x1943h6x.x4zkp8e.x41vudc.x6prxxf.xvq8zen.xo1l8bm.xzsf02u.x1yc453h';
+  // const classSelector = '.x193iq5w.xeuugli.x13faqbe.x1vvkbs.x10flsy6.x1lliihq.x1s928wv.xhkezso.x1gmr53x.x1cpjm7i.x1fgarty.x1943h6x.x4zkp8e.x41vudc.x6prxxf.xvq8zen.xo1l8bm.xzsf02u.x1yc453h';
 
+
+  const classSelector = ".x1cy8zhl.x78zum5.x1q0g3np.xod5an3.x1pi30zi.x1swvt13.xz9dl7a";
+
+
+  
   const elems = await page.$$(classSelector);
+
+  // function processPost(post) {}
+  // console.log(elems);
+
+
+  function pretifyJSON(inputString){
+
+    function trimDateAndReaction(inputString){
+    const trimPhrases = ['All reactions:', 'LikeShare', 'Like\nShare'];
+
+    let trimmedString = inputString;
+    
+    for (const trimPhrase of trimPhrases) {
+      const trimIndex = inputString.indexOf(trimPhrase);
+      if (trimIndex !== -1) {
+        trimmedString = inputString.substring(0, trimIndex);
+        break;
+      }
+    }
+    
+    return trimmedString;
+  }
+
+  let reactionRemoveString = trimDateAndReaction(inputString);
+
+  function makeJSONObject(inputString){
+  // const dateRegex = /(\d{1,2}\s\w+|\d{1,2}\s\w+\sat\s\d{2}:\d{2})/;
+  // const name = inputString.split(dateRegex)[0].trim();
+  // const date = inputString.match(dateRegex)?.[0] || '';
+  // const content = inputString.replace(name, '').replace(date, '').trim();
+
+  // const result = {
+  // name: name,
+  // date: date,
+  // content: content
+  // };
+
+  // console.log(result);
+
+  const dateRegex = /(\d{1,2}\s\w+(?:\sat\s\d{2}:\d{2})?)/;
+  const name = inputString.split(dateRegex)[0].trim();
+  const date = inputString.match(dateRegex)?.[0] || '';
+  
+  const content = inputString.replace(name, '').replace(date, '').trim();
+  
+  const result = {
+    name: name,
+    date: date,
+    content: content
+  };
+  
+  // console.log(result);
+
+  return result;
+
+
+  }
+
+  return makeJSONObject(reactionRemoveString);
+
+}
+
+
   const posts = {};
 
   for (let i = 0; i < elems.length; i++) {
     const elem = elems[i];
-    const textContent = await elem.evaluate(el => el.innerText);
-    posts[`publicPost${i}`] = textContent;
+    const textContent = await elem.evaluate(el => {
+     return el.parentNode.parentNode.innerText;
+      // return el.innerText
+    });
+
+    // console.log(textContent);
+    // console.log('Pretty Content', pretifyJSON(textContent));
+
+    pretifyJSON(textContent);
+    
+    posts[`publicPost${i}`] = pretifyJSON(textContent);
   }
 
   return posts;
@@ -185,7 +262,7 @@ await clickSeeMore();
 
   const posts = await fetchPublicPost();
 
-  console.log(posts);
+  // console.log(posts);
 
 
   function saveAsJSON(object, filename){
