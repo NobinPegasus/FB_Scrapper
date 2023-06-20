@@ -7,10 +7,19 @@ const { argv } = require('process');
 
 async function run() {
   const browser = await puppeteer.launch({
-    headless: true
+    headless: true,
+    args: [
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--disable-setuid-sandbox",
+      "--no-sandbox",
+      "--single-process",
+  ]
   });
 
+  
   const page = await browser.newPage();
+  await page.setDefaultNavigationTimeout(0);
 
 
   await page.goto('https://facebook.com/');
@@ -56,12 +65,9 @@ async function run() {
   await page.click(RANDOM_CLICK);
 
   await scroll(3);
-
-
-  let urls = [];
   
 
-  async function generateURLs(){
+  async function generateProfileURLs(){
     let newUrls = await page.evaluate(() => {
     let results = [];
 
@@ -82,7 +88,9 @@ async function run() {
 
 }
 
-  let newUrls =  await generateURLs();
+  let urls = [];
+
+  let newUrls =  await generateProfileURLs();
 
   urls = urls.concat(newUrls);
 
@@ -166,13 +174,9 @@ await clickSeeMore();
   const classSelector = ".x1cy8zhl.x78zum5.x1q0g3np.xod5an3.x1pi30zi.x1swvt13.xz9dl7a";
 
 
-  
-  const elems = await page.$$(classSelector);
-
-
   function pretifyJSON(inputString){
 
-    function trimDateAndReaction(inputString){
+    function trimReaction(inputString){
     const trimPhrases = ['All reactions:', 'LikeShare', 'Like\nShare'];
 
     let trimmedString = inputString;
@@ -188,7 +192,7 @@ await clickSeeMore();
     return trimmedString;
   }
 
-  let reactionRemoveString = trimDateAndReaction(inputString);
+  let reactionRemoveString = trimReaction(inputString);
 
   function makeJSONObject(str){
   
@@ -230,6 +234,8 @@ const content = str.split(date)[1].replace(contentRegex, '').replace("Shared wit
 }
 
 
+  const elems = await page.$$(classSelector);
+
   const posts = {};
 
   for (let i = 0; i < elems.length; i++) {
@@ -239,7 +245,7 @@ const content = str.split(date)[1].replace(contentRegex, '').replace("Shared wit
 
     });
 
-    pretifyJSON(textContent);
+    // pretifyJSON(textContent);
     
     posts[`publicPost${i}`] = pretifyJSON(textContent);
   }
