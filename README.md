@@ -5,6 +5,7 @@ A basic tool to scrape FB Usernames and Public posts.
 -----------------
 Tools: Puppeteer
 
+Requirement: node, csv-write, puppeteer
 
 ----------------
 Details:
